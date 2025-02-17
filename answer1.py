@@ -13,13 +13,11 @@ def get_all_regions() -> List[str]:
     return regions
 
 def get_instance_types(region: str) -> List[str]:
-    """Get unique instance types for a specific region."""
     try:
         ec2_client = boto3.client('ec2', region_name=region)
         paginator = ec2_client.get_paginator('describe_instance_type_offerings')
-        instance_types = set()  # Using set to avoid duplicates
+        instance_types = set()  
         
-        # Paginate through results
         for page in paginator.paginate(LocationType='region'):
             for offering in page['InstanceTypeOfferings']:
                 instance_types.add(offering['InstanceType'])
@@ -30,21 +28,16 @@ def get_instance_types(region: str) -> List[str]:
         return []
 
 def main():
-    # Get all regions
     regions = get_all_regions()
     
-    # Create and write to CSV file
     with open('ec2_instance_types.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        # Write header
         writer.writerow(['Region', 'InstanceType'])
         
-        # Process each region
         for region in regions:
             print(f"Processing region: {region}")
             instance_types = get_instance_types(region)
             
-            # Write each instance type for this region
             for instance_type in instance_types:
                 writer.writerow([region, instance_type])
 
